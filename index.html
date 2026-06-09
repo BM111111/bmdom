@@ -733,6 +733,10 @@
         <button id="saveCustomBtn">保存</button>
         <button id="closeCustomBtn" style="background:#3c4b6e; margin-top:0.5rem;">取消</button>
         <hr style="margin:1rem 0; border-color:#4a5c7c;">
+        <div style="display: flex; gap: 0.8rem; margin: 0.5rem 0 1rem;">
+            <button id="exportCustomBtn" style="background: #2a554b; flex:1;">📤 导出</button>
+            <button id="importCustomBtn" style="background: #5f4790; flex:1;">📥 导入</button>
+        </div>
         <h4>📋 已有自定义</h4>
         <div id="customList" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
     </div>
@@ -1432,6 +1436,8 @@
         addBroadcastMessage(msg);
         broadcastToRoom(msg);
     };
+    document.getElementById("exportCustomBtn")?.addEventListener("click", exportCustomChallenges);
+    document.getElementById("importCustomBtn")?.addEventListener("click", triggerImport);
     customModal.onclick = (e) => { if(e.target === customModal) customModal.style.display = "none"; };
 
     const mottoList = ["I know I'm STILL SHINING","存档 读档 升级 这就是人生","情绪总被左右，好像忘记了什么","战斗力已经拉满，但还是忘了什么","Dizzy問題とかどうする？点Pとかどうする？","最高で最強！","加强霓虹！！！！！！！！！！","没关系的错就错吧"];
@@ -1447,6 +1453,72 @@
     renderHistory();
     renderFavourites();
     generateSimple(5);
+    // ========== 导出/导入自定义挑战 ==========
+function exportCustomChallenges() {
+    if (!customChallenges.length) {
+        alert("暂无自定义挑战，请先添加。");
+        return;
+    }
+    const dataStr = JSON.stringify(customChallenges, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "val_custom_challenges.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (typeof addBroadcastMessage === "function") addBroadcastMessage("📤 已导出自定义挑战");
+}
+
+let importFileInput = null;
+function importCustomChallenges(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (!Array.isArray(imported)) throw new Error("格式错误");
+            for (let ch of imported) {
+                if (!ch.name || !ch.desc || !ch.difficulty) {
+                    alert("导入的文件格式不正确，缺少必要字段 (name, desc, difficulty)");
+                    return;
+                }
+            }
+            const choice = confirm("导入自定义挑战：\n点击「确定」将合并（保留原有，新增不重复）\n点击「取消」将完全替换现有自定义挑战");
+            if (choice) {
+                const existingNames = new Set(customChallenges.map(c => c.name));
+                const newOnes = imported.filter(c => !existingNames.has(c.name));
+                customChallenges.push(...newOnes);
+                alert(`已合并 ${newOnes.length} 条新挑战，原有保留。`);
+            } else {
+                customChallenges = imported;
+                alert(`已替换所有自定义挑战，共 ${imported.length} 条。`);
+            }
+            saveCustom();          // 保存到 localStorage
+            renderCustomList();    // 刷新模态框内的列表
+            if (typeof addBroadcastMessage === "function") addBroadcastMessage("📥 自定义挑战已导入");
+        } catch(err) {
+            alert("导入失败：文件内容不是有效的 JSON 格式");
+        }
+    };
+    reader.readAsText(file);
+}
+
+function triggerImport() {
+    if (importFileInput) importFileInput.remove();
+    importFileInput = document.createElement("input");
+    importFileInput.type = "file";
+    importFileInput.accept = "application/json";
+    importFileInput.onchange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            importCustomChallenges(e.target.files[0]);
+        }
+        importFileInput.remove();
+        importFileInput = null;
+    };
+    importFileInput.click();
+}
 </script>
 </body>
 </html>
