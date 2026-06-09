@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>关于 · @BeiMing257 | 工具</title>
+    <title>关于 · BeiMing257 | 无畏契约随机工具</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         * {
             margin: 0;
@@ -117,22 +117,30 @@
             transform: translateY(-2px);
         }
 
-        /* 返回按钮独立样式，改为浅蓝色 */
-        .back-link {
-            display: inline-block;
-            margin-top: 1rem;
-            background: rgb(64, 194, 246);
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            text-decoration: none;
-            color: #0b0f1a;
-            font-weight: bold;
-            transition: 0.2s;
+        /* 工具列表样式 */
+        .tools-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
-
-        .back-link:hover {
-            background: rgb(44, 174, 226);
+        .tool-card {
+            background: #1f2a44;
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: #eef4ff;
+            font-weight: 500;
+            transition: 0.2s;
+            border: 1px solid rgba(255,180,100,0.3);
+        }
+        .tool-card:hover {
+            background: #2f3e64;
             transform: translateY(-2px);
+            color: #ffdd99;
         }
 
         footer {
@@ -195,9 +203,16 @@
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 2rem;">
-            <a href="index.html" class="back-link">← 返回随机工具</a>
+        <!-- 新增：已有工具 -->
+        <div class="section">
+            <h2>🔧 已有工具</h2>
+            <div class="tools-list">
+                <a href="index.html" class="tool-card">🎲 随机挑战生成器</a>
+                <a href="random-wheel.html" class="tool-card">🎡 自定义随机转盘</a>
+            </div>
         </div>
+
+        <!-- 已删除返回按钮 -->
     </div>
     <footer>都是凛拓川干的！ ©2010-现在 禁止采集数据和转载商业化</footer>
 </div>
