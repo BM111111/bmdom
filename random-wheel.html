@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>自定义随机转盘 · 无畏契约工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0f1a;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', 'Roboto', sans-serif;
+            padding: 1.2rem;
+            color: #eef4ff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* 右上角作者（与 index.html 一致） */
+        .author-corner {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(10, 18, 30, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 215, 150, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .author-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ffbc6e;
+        }
+        .author-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ffdd99;
+            letter-spacing: 0.5px;
+        }
+        .author-name span {
+            font-weight: 700;
+            color: #ffbc6e;
+        }
+
+        /* 背景横幅（与 index.html 一致） */
+        .hero-banner {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            max-height: 260px;
+            border-radius: 2rem;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -8px black;
+            cursor: pointer;
+        }
+        .hero-banner-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('images/bg.jpg');
+            background-size: cover;
+            background-position: center center;
+            filter: brightness(0.85);
+            transition: 0.3s;
+        }
+        .hero-banner:hover .hero-banner-bg {
+            filter: brightness(1.0);
+            transform: scale(1.01);
+        }
+        .banner-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+            backdrop-filter: brightness(1.1);
+            letter-spacing: 4px;
+            color: #fff3cf;
+            font-family: monospace;
+        }
+
+        /* 主卡片区域 */
+        .main-card {
+            background: rgba(18, 28, 45, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 180, 100, 0.3);
+            padding: 1.8rem;
+            margin-top: 1rem;
+            box-shadow: 0 20px 35px -12px black;
+        }
+
+        .wheel-title-editor {
+            text-align: center;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .wheel-title-editor label {
+            color: #ffdd99;
+            font-size: 0.9rem;
+        }
+        .wheel-title-editor input {
+            background: #0f1424;
+            border: 1px solid #ffbc6e;
+            border-radius: 2rem;
+            padding: 0.3rem 1rem;
+            color: white;
+            font-size: 1rem;
+            text-align: center;
+            width: 220px;
+        }
+        .current-title {
+            font-size: 1.1rem;
+            color: #ffdd99;
+            font-weight: bold;
+        }
+
+        .sub {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #8e9fc3;
+            margin-bottom: 1.5rem;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .wheel-area {
+            flex: 2;
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+        }
+        canvas {
+            width: 100%;
+            max-width: 450px;
+            height: auto;
+            background: #1e243b;
+            border-radius: 50%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            display: block;
+        }
+        .pointer {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 32px solid #ffd966;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3));
+            z-index: 10;
+        }
+        .pointer::after {
+            content: "▼";
+            position: absolute;
+            top: -42px;
+            left: -12px;
+            font-size: 28px;
+            color: #ffd966;
+            text-shadow: 0 2px 2px black;
+        }
+
+        .result-text {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #1f2a44;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            color: #ffdd99;
+        }
+
+        .options-area {
+            flex: 1.5;
+            min-width: 280px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1.5rem;
+            padding: 1rem;
+        }
+
+        .options-area h3 {
+            color: #ffdd99;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-list {
+            max-height: 350px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #0f1424;
+            padding: 0.3rem 0.6rem;
+            border-radius: 2rem;
+            flex-wrap: wrap;
+        }
+        .option-item input[type="text"] {
+            flex: 3;
+            background: #1f2a44;
+            border: none;
+            padding: 0.3rem 0.5rem;
+            border-radius: 1rem;
+            color: white;
+            font-size: 0.8rem;
+        }
+        .option-item input[type="number"] {
+            width: 65px;
+            background: #1f2a44;
+            border: none;
+            padding: 0.3rem 0.3rem;
+            border-radius: 1rem;
+            color: #ffdd99;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .option-item button {
+            background: #2a2f3f;
+            border: none;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            color: #ffbc6e;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        .add-option {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .add-option input {
+            flex: 1;
+            background: #0f1424;
+            border: 1px solid #4a5c7c;
+            border-radius: 2rem;
+            padding: 0.4rem 0.8rem;
+            color: white;
+        }
+        .add-option input[type="number"] {
+            max-width: 80px;
+        }
+
+        button {
+            background: #2a2f3f;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            color: #eef4ff;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button.primary {
+            background: linear-gradient(135deg, #ff7e5e, #feb47b);
+            color: white;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            background: #3d4459;
+        }
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #5c6f97;
+            border-top: 1px solid #232e44;
+            padding-top: 1rem;
+        }
+        .tip {
+            font-size: 0.7rem;
+            color: #8e9fc3;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 右上角作者 -->
+    <div class="author-corner">
+    <a href="aboutme.html" target="_blank" title="进入关于作者" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+        <img class="author-avatar" src="images/avatar.png" alt="avatar" onerror="this.src='https://s3.bmp.ovh/2026/06/07/uxmqGfg7.png'">
+        <div class="author-name">📌 <span>@BeiMing257</span></div>
+    </a>
+</div>
+
+    <!-- 背景横幅 -->
+    <div class="hero-banner">
+        <div class="hero-banner-bg"></div>
+        <div class="banner-text">🎲 随机小工具 🎲</div>
+    </div>
+
+    <div class="main-card">
+        <div class="wheel-title-editor">
+            <label>🎡 转盘名称：</label>
+            <input type="text" id="wheelTitleInput" value="自定义随机转盘">
+            <span class="current-title" id="titleDisplay"></span>
+        </div>
+        <div class="sub">点击转盘旋转 · 自由编辑选项和权重</div>
+
+        <div class="flex-row">
+            <div class="wheel-area">
+                <div class="wheel-container">
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                    <div class="pointer"></div>
+                </div>
+                <div class="result-text" id="resultDisplay">✨ 点击转盘开始 ✨</div>
+                <div class="tip">权重越高，被选中的概率越大</div>
+            </div>
+
+            <div class="options-area">
+                <h3>📋 转盘选项（可编辑名称/权重）</h3>
+                <div id="optionListContainer" class="option-list"></div>
+                <div class="add-option">
+                    <input type="text" id="newOptionText" placeholder="新选项，例如：捷风">
+                    <input type="number" id="newOptionWeight" placeholder="权重" value="1" step="1" min="1" style="width:80px;">
+                    <button id="addOptionBtn" class="primary">➕ 添加</button>
+                </div>
+                <div class="btn-group">
+                    <button id="resetDefaultBtn">🔄 重置默认选项</button>
+                    <button id="clearAllBtn">🗑️ 清空所有</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>都是凛拓川干的！ ©2010-现在 禁止使用采集数据和转载商业化</footer>
+</div>
+
+<script>
+    // ---------- 默认选项（名称 + 权重）----------
+    const DEFAULT_ITEMS = [
+        { name: "捷风", weight: 1 },
+        { name: "不死鸟", weight: 1 },
+        { name: "雷兹", weight: 1 },
+        { name: "芮娜", weight: 1 },
+        { name: "夜露", weight: 1 },
+        { name: "霓虹", weight: 1 },
+        { name: "狂徒", weight: 2 },
+        { name: "幻影", weight: 2 },
+        { name: "冥驹", weight: 1 },
+        { name: "幽灵静步", weight: 1 },
+        { name: "纸片人", weight: 1 }
+    ];
+
+    let items = [];
+    let rotation = 0;
+    let spinning = false;
+
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const resultDisplay = document.getElementById('resultDisplay');
+    const optionListContainer = document.getElementById('optionListContainer');
+    const wheelTitleInput = document.getElementById('wheelTitleInput');
+    const titleDisplay = document.getElementById('titleDisplay');
+
+    // 更新标题显示
+    function updateTitleDisplay() {
+        const title = wheelTitleInput.value.trim();
+        titleDisplay.innerText = title || '自定义随机转盘';
+    }
+    wheelTitleInput.addEventListener('input', updateTitleDisplay);
+    updateTitleDisplay();
+
+    const colorPalette = [
+        "#FF6B6B", "#4ECDC4", "#FFE66D", "#FF9F4A", "#B76EF0", "#F05B56",
+        "#6C91B2", "#E6B8A2", "#7CB5B6", "#F4A261", "#E76F51", "#9C89B8",
+        "#70AE6E", "#F7B05E", "#E28413", "#5F7A6B", "#D90368", "#2E86AB"
+    ];
+    function getColor(idx) { return colorPalette[idx % colorPalette.length]; }
+
+    function drawWheel() {
+        if (!ctx) return;
+        const w = canvas.width, h = canvas.height;
+        const cx = w/2, cy = h/2;
+        const radius = w * 0.42;
+        const count = items.length;
+
+        ctx.clearRect(0, 0, w, h);
+        if (count === 0) {
+            ctx.fillStyle = "#aaa";
+            ctx.font = "14px sans-serif";
+            ctx.fillText("暂无选项，请添加", cx-60, cy);
+            return;
+        }
+
+        const angleStep = (Math.PI * 2) / count;
+        for (let i = 0; i < count; i++) {
+            const start = i * angleStep + rotation;
+            const end = (i + 1) * angleStep + rotation;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius, start, end);
+            ctx.fillStyle = getColor(i);
+            ctx.fill();
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(start + angleStep/2);
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            let text = items[i].name;
+            if (text.length > 8) text = text.slice(0,7)+"..";
+            ctx.font = `bold ${Math.max(12, Math.min(20, w/22))}px "Segoe UI"`;
+            ctx.fillStyle = "#FFF9E6";
+            ctx.shadowBlur = 4;
+            ctx.fillText(text, radius * 0.7, 6);
+            ctx.restore();
+        }
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius*0.12, 0, 2*Math.PI);
+        ctx.fillStyle = "#FFD966";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius*0.06, 0, 2*Math.PI);
+        ctx.fillStyle = "#FFB347";
+        ctx.fill();
+    }
+
+    function getCurrentIndex() {
+        if (items.length === 0) return -1;
+        const pointerAngle = -Math.PI/2;
+        const angleStep = (Math.PI*2)/items.length;
+        for (let i=0; i<items.length; i++) {
+            let start = i*angleStep + rotation;
+            let end = (i+1)*angleStep + rotation;
+            let normPtr = ((pointerAngle % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+            let normStart = ((start % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+            let normEnd = ((end % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+            if (normStart < normEnd) {
+                if (normPtr >= normStart && normPtr < normEnd) return i;
+            } else {
+                if (normPtr >= normStart || normPtr < normEnd) return i;
+            }
+        }
+        return 0;
+    }
+
+    function updateResultText() {
+        const idx = getCurrentIndex();
+        if (idx >=0 && items[idx]) resultDisplay.innerHTML = `🎉 结果：${items[idx].name} 🎉`;
+        else resultDisplay.innerHTML = "✨ 点击转盘开始 ✨";
+    }
+
+    function selectIndexByWeight() {
+        if (items.length === 0) return -1;
+        let total = items.reduce((s, item) => s + (item.weight || 1), 0);
+        let rand = Math.random() * total;
+        let acc = 0;
+        for (let i=0; i<items.length; i++) {
+            acc += (items[i].weight || 1);
+            if (rand <= acc) return i;
+        }
+        return 0;
+    }
+
+    function spinWheel() {
+        if (spinning || items.length === 0) return;
+        spinning = true;
+        const targetIdx = selectIndexByWeight();
+        const angleStep = (Math.PI*2)/items.length;
+        const targetCenter = targetIdx * angleStep + angleStep/2;
+        let delta = (-Math.PI/2) - (targetCenter + rotation);
+        delta = ((delta % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+        const extraRounds = 5 + Math.floor(Math.random()*8);
+        const totalDelta = delta + extraRounds * 2 * Math.PI;
+        const startRot = rotation;
+        const targetRot = startRot + totalDelta;
+        const startTime = performance.now();
+        const duration = 1500;
+        function animate(now) {
+            let t = Math.min(1, (now-startTime)/duration);
+            let ease = 1 - Math.pow(1-t, 3);
+            rotation = startRot + totalDelta * ease;
+            drawWheel();
+            if (t < 1) requestAnimationFrame(animate);
+            else {
+                rotation = targetRot;
+                drawWheel();
+                updateResultText();
+                spinning = false;
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function renderOptionList() {
+        optionListContainer.innerHTML = '';
+        if (items.length === 0) {
+            const empty = document.createElement('div');
+            empty.textContent = "暂无选项，请添加";
+            empty.style.color = "#8e9fc3";
+            empty.style.padding = "0.5rem";
+            optionListContainer.appendChild(empty);
+            return;
+        }
+        items.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'option-item';
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = item.name;
+            nameInput.addEventListener('change', (e) => {
+                items[idx].name = e.target.value.trim() || "未命名";
+                drawWheel();
+                updateResultText();
+                renderOptionList();
+            });
+            const weightInput = document.createElement('input');
+            weightInput.type = 'number';
+            weightInput.value = item.weight;
+            weightInput.step = 1;
+            weightInput.min = 1;
+            weightInput.style.width = '70px';
+            weightInput.addEventListener('change', (e) => {
+                let w = parseInt(e.target.value);
+                if (isNaN(w) || w < 1) w = 1;
+                items[idx].weight = w;
+                renderOptionList();
+                drawWheel();
+            });
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '✖';
+            delBtn.addEventListener('click', () => {
+                if (items.length <= 1) {
+                    alert("至少保留一个选项");
+                    return;
+                }
+                items.splice(idx, 1);
+                drawWheel();
+                updateResultText();
+                renderOptionList();
+            });
+            div.appendChild(nameInput);
+            div.appendChild(weightInput);
+            div.appendChild(delBtn);
+            optionListContainer.appendChild(div);
+        });
+    }
+
+    function addOption() {
+        const name = document.getElementById('newOptionText').value.trim();
+        const weight = parseInt(document.getElementById('newOptionWeight').value) || 1;
+        if (!name) { alert("请输入选项名称"); return; }
+        items.push({ name: name, weight: Math.max(1, weight) });
+        document.getElementById('newOptionText').value = '';
+        document.getElementById('newOptionWeight').value = '1';
+        drawWheel();
+        updateResultText();
+        renderOptionList();
+    }
+
+    function resetDefault() {
+        items = DEFAULT_ITEMS.map(item => ({ ...item }));
+        drawWheel();
+        updateResultText();
+        renderOptionList();
+    }
+
+    function clearAll() {
+        if (confirm("确定清空所有选项吗？至少需要保留一个。")) {
+            items = [{ name: "默认选项", weight: 1 }];
+            drawWheel();
+            updateResultText();
+            renderOptionList();
+        }
+    }
+
+    canvas.addEventListener('click', spinWheel);
+    document.getElementById('addOptionBtn').addEventListener('click', addOption);
+    document.getElementById('resetDefaultBtn').addEventListener('click', resetDefault);
+    document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+
+    // 初始化
+    resetDefault();
+</script>
+</body>
+</html>
