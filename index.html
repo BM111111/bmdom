@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Lin's valrandom | 今天真的很高兴。</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0f1a;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', 'Roboto', sans-serif;
+            padding: 1.2rem;
+            color: #eef4ff;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .author-corner {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(10, 18, 30, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 0.4rem 1rem 0.4rem 0.6rem;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 215, 150, 0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .author-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #ffbc6e;
+        }
+        .author-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ffdd99;
+            letter-spacing: 0.5px;
+        }
+        .author-name span {
+            font-weight: 700;
+            color: #ffbc6e;
+        }
+
+        .hero-banner {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            max-height: 260px;
+            border-radius: 2rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 25px -8px black;
+            cursor: pointer;
+        }
+        .hero-banner-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://s3.bmp.ovh/2026/06/07/wekMHuke.jpg');
+            background-size: cover;
+            background-position: center center;
+            filter: brightness(0.85);
+            transition: 0.3s;
+        }
+        .hero-banner:hover .hero-banner-bg {
+            filter: brightness(1.0);
+            transform: scale(1.01);
+        }
+        .banner-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+            backdrop-filter: brightness(1.1);
+            letter-spacing: 4px;
+            color: #fff3cf;
+            font-family: monospace;
+        }
+
+        .motto-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 0.5rem 0 1rem 0;
+            background: rgba(0,0,0,0.25);
+            padding: 0.3rem 1rem;
+            border-radius: 60px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            backdrop-filter: blur(4px);
+        }
+        .motto-text {
+            font-size: 0.85rem;
+            color: #cbd5e6;
+            font-style: italic;
+            letter-spacing: 0.3px;
+        }
+        .motto-icon {
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #ffbc6e;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.3);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        .motto-icon:hover {
+            transform: rotate(15deg);
+            background: #ffbc6e30;
+        }
+
+        .room-bar {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin: 0.5rem 0 1rem;
+            flex-wrap: wrap;
+        }
+        .room-input {
+            background: #0f1424;
+            border: 1px solid #ffbc6e;
+            border-radius: 2rem;
+            padding: 0.4rem 1rem;
+            color: white;
+            width: 200px;
+            text-align: center;
+        }
+        .room-status {
+            color: #ffbc6e;
+            font-size: 0.85rem;
+            align-self: center;
+        }
+        .btn-room {
+            background: linear-gradient(135deg, #4a6fa5, #2c3e66);
+            border: none;
+            padding: 0.4rem 1.2rem;
+            border-radius: 3rem;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-room:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #5e7fb5, #3a4c7c);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+        }
+
+        .remark-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 0 0 1.2rem 0;
+            flex-wrap: wrap;
+        }
+        .remark-input {
+            width: 100%;
+            max-width: 450px;
+            background: #0f1424;
+            border: 1px solid #4a5c7c;
+            border-radius: 2rem;
+            padding: 0.6rem 1.2rem;
+            color: #eef4ff;
+            font-family: inherit;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .remark-save-btn {
+            background: #4caf50;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+        .remark-save-btn:hover {
+            background: #6fbf6f;
+            transform: scale(1.02);
+        }
+
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .count-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15,20,35,0.6);
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+        }
+        .count-control label {
+            font-size: 0.85rem;
+        }
+        .count-control input {
+            background: #0f1424;
+            border: 1px solid #4a5c7c;
+            border-radius: 1rem;
+            padding: 0.3rem 0.6rem;
+            color: white;
+            width: 70px;
+        }
+        .btn-custom {
+            background: #ff8c00;
+            border: none;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+        .btn-custom:hover {
+            background: #ffa333;
+            transform: scale(1.02);
+        }
+
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .btn {
+            border: none;
+            font-weight: bold;
+            padding: 0.7rem 1.8rem;
+            border-radius: 60px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+        .btn-gray {
+            background: #2a2f3f;
+            color: #eef5ff;
+            border-bottom: 2px solid #5e6b8c;
+        }
+        .btn-gray:hover {
+            background: #3d4459;
+            transform: translateY(-2px);
+        }
+        .btn-team {
+            background: #ff8c00;
+            color: white;
+            border-bottom: 2px solid #cc7000;
+        }
+        .btn-team:hover {
+            background: #ffa333;
+            transform: translateY(-2px);
+        }
+
+        .switch-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: 0.5rem 0 1rem;
+        }
+        .btn-switch {
+            background: linear-gradient(135deg, #ff7e5e, #feb47b);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.8rem;
+            border-radius: 3rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(255, 126, 94, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-switch:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(255, 126, 94, 0.6);
+        }
+
+        .tool-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0 1rem;
+        }
+        .btn-tool {
+            background: #1f2a44;
+            border: none;
+            font-weight: bold;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: #eef4ff;
+            border-bottom: 2px solid #7085b0;
+        }
+        .btn-tool:hover {
+            background: #2f3e64;
+            transform: translateY(-2px);
+        }
+
+        /* 广播面板（始终显示） */
+        .broadcast-panel {
+            background: rgba(15, 20, 35, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border: 1px solid #ffbc6e40;
+        }
+        .broadcast-title {
+            font-size: 0.8rem;
+            color: #ffdd99;
+            margin-bottom: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .broadcast-list {
+            max-height: 120px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+        }
+        .broadcast-item {
+            color: #cbd5e6;
+            padding: 0.2rem 0;
+            border-bottom: 1px dashed #3a4565;
+        }
+        .broadcast-time {
+            color: #8e9fc3;
+            font-size: 0.6rem;
+            margin-left: 0.5rem;
+        }
+
+        .result-panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            border: 1px solid #ffbc6e40;
+        }
+        .result-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffdd99;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0 1rem;
+        }
+        .challenge-card {
+            background: rgba(18, 28, 45, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255,180,100,0.3);
+            padding: 1rem;
+            position: relative;
+        }
+        .card-side {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: #1e2a3e;
+            padding: 0.2rem 0.7rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #ffbb77;
+        }
+        .hero-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(120deg, #FFD966, #FF9F4A);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0.3rem 0 0.6rem;
+        }
+        .weapon-block {
+            background: #0a1022;
+            border-radius: 1rem;
+            padding: 0.4rem 0.8rem;
+            margin: 0.6rem 0;
+            border-left: 4px solid #ffaa55;
+        }
+        .weapon-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #f3f9ff;
+        }
+        .challenge-block {
+            background: rgba(0,0,0,0.4);
+            border-radius: 1rem;
+            padding: 0.6rem;
+            font-size: 0.8rem;
+        }
+        .challenge-name {
+            color: #ffbc6e;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #8fa2cc;
+        }
+        .history-panel, .custom-adjust-panel {
+            background: rgba(15, 20, 35, 0.8);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-top: 2rem;
+            border: 1px solid #ffbc6e40;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid #3a4565;
+            padding-bottom: 0.5rem;
+        }
+        .panel-header h3 {
+            font-size: 1.1rem;
+            color: #ffdd99;
+        }
+        .history-list, .favourites-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .history-item, .fav-item {
+            background: #0f1424;
+            border-radius: 1rem;
+            padding: 0.5rem 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .history-info, .fav-info {
+            flex: 1;
+            cursor: pointer;
+            color: #cbd5e6;
+        }
+        .history-info:hover, .fav-info:hover {
+            color: #ffbc6e;
+        }
+        .btn-icon {
+            background: #2a2f3f;
+            border: none;
+            border-radius: 1rem;
+            padding: 0.2rem 0.6rem;
+            color: #eef4ff;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        .btn-icon:hover {
+            background: #ff7b4a;
+        }
+        .custom-textarea {
+            width: 100%;
+            background: #0f1424;
+            border: 1px solid #4a5c7c;
+            border-radius: 1rem;
+            padding: 0.8rem;
+            color: #eef4ff;
+            font-family: inherit;
+            font-size: 0.85rem;
+            resize: vertical;
+            margin-top: 0.5rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #5c6f97;
+            border-top: 1px solid #232e44;
+            padding-top: 1rem;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .modal-card {
+            background: #141c2c;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            width: 320px;
+            border: 1px solid #ffcf8e;
+        }
+        .modal-card h3 {
+            text-align: center;
+            color: #ffd966;
+            margin-bottom: 1rem;
+        }
+        .modal-card input, .modal-card select, .modal-card textarea {
+            width: 100%;
+            background: #0f1424;
+            border: 1px solid #4a5c7c;
+            border-radius: 1rem;
+            padding: 0.4rem;
+            color: white;
+            margin-bottom: 0.8rem;
+        }
+        .modal-card button {
+            background: #ff7b4a;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+            width: 100%;
+        }
+        @keyframes flash {
+            0% { background-color: #2a554b; }
+            50% { background-color: #6fbf6f; }
+            100% { background-color: #2a554b; }
+        }
+        .btn-flash {
+            animation: flash 0.4s ease-in-out;
+        }
+        .random-number-panel input, .random-number-panel button {
+            background: #0f1424;
+            border: 1px solid #4a5c7c;
+            border-radius: 1rem;
+            padding: 0.4rem 0.8rem;
+            color: white;
+        }
+        .random-number-panel button {
+            background: #ff7b4a;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="author-corner">
+        <img class="author-avatar" src="https://s3.bmp.ovh/2026/06/07/uxmqGfg7.png" alt="avatar">
+        <div class="author-name">📌 <span>@BeiMing257</span></div>
+    </div>
+
+    <div class="hero-banner">
+        <div class="hero-banner-bg"></div>
+        <div class="banner-text">🎲 随机小工具 🎲</div>
+    </div>
+
+    <div class="motto-line">
+        <span class="motto-text" id="mottoText">I know I'm STILL SHINING</span>
+        <button class="motto-icon" id="cycleMottoBtn">🔄</button>
+    </div>
+
+    <div class="room-bar">
+        <input type="text" id="roomInput" class="room-input" placeholder="房间号 (例如: myroom)">
+        <button id="joinRoomBtn" class="btn-room">🏠 创建/加入房间</button>
+        <span id="roomStatus" class="room-status"></span>
+    </div>
+
+    <div class="remark-wrapper">
+        <input type="text" id="globalRemark" class="remark-input" placeholder="备注/批注区（请输入文本）">
+        <button id="saveRemarkBtn" class="remark-save-btn">💾 保存</button>
+    </div>
+
+    <div class="control-bar">
+        <div class="count-control">
+            <label>🎲 生成数量：</label>
+            <input type="number" id="randomCountInput" min="1" max="10" value="5" step="1">
+        </div>
+        <button id="openCustomBtn" class="btn-custom">➕ 自定义挑战</button>
+    </div>
+
+    <div class="action-bar">
+        <button id="simpleRandomBtn" class="btn btn-gray">✨ 随机生成 ✨</button>
+        <button id="teamRandomBtn" class="btn btn-team">👥 团队随机 👥</button>
+    </div>
+
+    <div id="switchWrapper" class="switch-wrapper" style="display: none;">
+        <button id="switchSideBtn" class="btn-switch">🔄 攻防转换 🔄</button>
+    </div>
+
+    <div class="tool-bar">
+        <button id="randomNumberBtn" class="btn-tool">🎲 随机数</button>
+        <button id="randomWeaponBtn" class="btn-tool">🔫 随机武器</button>
+        <button id="randomHeroBtn" class="btn-tool">🦸 随机英雄</button>
+    </div>
+
+    <!-- 广播面板（始终显示） -->
+    <div id="broadcastPanel" class="broadcast-panel">
+        <div class="broadcast-title">📢 实时动态</div>
+        <div id="broadcastList" class="broadcast-list">等待操作……</div>
+    </div>
+
+    <div id="resultPanel" class="result-panel" style="display: none;">
+        <div id="resultText" class="result-text">✨ 点击上方按钮 ✨</div>
+        <div id="randomNumberPanel" class="random-number-panel" style="display: none; text-align:center;">
+            <div>
+                <span>最小值：</span>
+                <input type="number" id="randMinInput" value="1">
+                <span>最大值：</span>
+                <input type="number" id="randMaxInput" value="100">
+                <button id="confirmRandBtn">生成</button>
+            </div>
+            <div id="randDisplay" style="margin-top:0.8rem;">—</div>
+        </div>
+    </div>
+
+    <div id="cardsContainer" class="cards-grid">
+        <div class="empty-state">⚔️ 点击上方按钮开始生成挑战 ⚔️</div>
+    </div>
+
+    <div class="history-panel">
+        <div class="panel-header">
+            <h3>📜 历史记录</h3>
+            <button id="clearHistoryBtn" class="btn-icon" style="background:#4a3b5e;">清空历史</button>
+        </div>
+        <div id="historyList" class="history-list"><div style="color:#8e9fc3;">暂无记录</div></div>
+    </div>
+    
+    <div class="history-panel">
+        <div class="panel-header">
+            <h3>⭐ 我的收藏</h3>
+            <button id="clearFavBtn" class="btn-icon" style="background:#4a3b5e;">清空收藏</button>
+        </div>
+        <div id="favouritesList" class="history-list"><div style="color:#8e9fc3;">暂无收藏</div></div>
+    </div>
+
+    <div class="custom-adjust-panel">
+        <div class="panel-header">
+            <h3>📝 自定义调整内容</h3>
+            <button id="saveAdjustBtn" class="btn-icon" style="background:#2a554b;">保存</button>
+        </div>
+        <textarea id="customAdjustText" class="custom-textarea" rows="4" placeholder="在这里写下你的自定义调整规则、战术笔记或任何想记录的内容...（自动保存至本地）"></textarea>
+        <div style="font-size:0.7rem; color:#8e9fc3; margin-top:0.3rem;">内容会自动保存到浏览器，下次打开仍在。</div>
+    </div>
+
+    <footer>都是凛拓川干的！ ©2010-现在 禁止使用采集数据和转载商业化</footer>
+</div>
+
+<div id="teamModal" class="modal">
+    <div class="modal-card">
+        <h3>🎯 配置团队数量</h3>
+        <div style="display:flex; gap:0.5rem; margin-bottom:1rem; justify-content:space-between;">
+            <input type="number" id="randomTeamSize" min="1" max="10" value="5" style="width:80px;">
+            <button id="randomTeamBtn" style="background:#ff8c00; padding:0.2rem 0.8rem; border:none; border-radius:1.5rem; color:white; cursor:pointer;">随机阵容</button>
+        </div>
+        <div><label>🔥 决斗者</label><input type="number" id="duelistCount" min="0" value="1"></div>
+        <div><label>🔍 先锋</label><input type="number" id="initiatorCount" min="0" value="1"></div>
+        <div><label>☁️ 控场者</label><input type="number" id="controllerCount" min="0" value="1"></div>
+        <div><label>🛡️ 哨卫</label><input type="number" id="sentinelCount" min="0" value="1"></div>
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button id="confirmTeamBtn">立即随机</button>
+            <button id="cancelTeamBtn" style="background:#3c4b6e;">取消</button>
+        </div>
+    </div>
+</div>
+
+<div id="customModal" class="modal">
+    <div class="modal-card">
+        <h3>➕ 添加自定义挑战</h3>
+        <input type="text" id="customName" placeholder="挑战名称 (例: 禁止开镜)">
+        <textarea id="customDesc" rows="2" placeholder="挑战描述"></textarea>
+        <select id="customDifficulty">
+            <option value="普通">普通</option>
+            <option value="地狱">地狱</option>
+            <option value="娱乐">娱乐</option>
+        </select>
+        <button id="saveCustomBtn">保存</button>
+        <button id="closeCustomBtn" style="background:#3c4b6e; margin-top:0.5rem;">取消</button>
+        <hr style="margin:1rem 0; border-color:#4a5c7c;">
+        <h4>📋 已有自定义</h4>
+        <div id="customList" style="max-height:150px; overflow-y:auto; font-size:0.8rem;"></div>
+    </div>
+</div>
+
+<script>
+    // ========== 英雄池 ==========
+    const AGENTS_BY_ROLE = {
+        duelist: ["捷风", "不死鸟", "雷兹", "芮娜", "夜露", "霓虹", "壹决", "幻棱"],
+        initiator: ["猎枭", "铁臂", "斯凯", "K/O", "黑梦", "盖可", "钛狐"],
+        controller: ["幽影", "蝰蛇", "炼狱", "星礈", "海神", "暮蝶", "迷核"],
+        sentinel: ["贤者", "零", "奇乐", "尚勃勒", "钢锁", "维斯"]
+    };
+    const ALL_AGENTS = [...AGENTS_BY_ROLE.duelist, ...AGENTS_BY_ROLE.initiator, ...AGENTS_BY_ROLE.controller, ...AGENTS_BY_ROLE.sentinel];
+
+    const WEAPONS = [
+        "标配 (Classic)", "短炮 (Shorty)", "狂怒 (Frenzy)", "鬼魅 (Ghost)", "正义 (Sheriff)",
+        "蜂刺 (Stinger)", "骇灵 (Spectre)", "雄鹿 (Bucky)", "判官 (Judge)", "獠犬 (Bulldog)",
+        "戍卫 (Guardian)", "幻影 (Phantom)", "狂徒 (Vandal)", "飞将 (Marshal)", "莽侠 (Outlaw)",
+        "冥驹 (Operator)", "战神 (Ares)", "奥丁 (Odin)"
+    ];
+
+    // 基础挑战库（完整版）
+    const BASE_CHALLENGES = [
+        { name: "🤫 幽灵静步", desc: "全程禁止奔跑，暴露脚步声即失败。", weight: 4, difficulty: "普通" },
+        { name: "📄 纸片人", desc: "禁止购买任何护甲，禁止治疗/护盾技能。", weight: 4, difficulty: "普通" },
+        { name: "🤐 沉默刺客", desc: "禁用所有技能 (Q/E/C/X)，仅靠枪法。", weight: 4, difficulty: "地狱" },
+        { name: "🐇 禁跃契约", desc: "整场比赛禁止按下跳跃键。", weight: 3, difficulty: "普通" },
+        { name: "🧎 蹲姿禁令", desc: "禁止使用下蹲，永远站立对枪。", weight: 3, difficulty: "普通" },
+        { name: "🔄 强制换弹症", desc: "每次击杀后必须立刻换弹。", weight: 3, difficulty: "普通" },
+        { name: "🔫 禁止右键", desc: "不能使用鼠标右键 (不能开镜/枪托)。", weight: 3, difficulty: "普通" },
+        { name: "🧱 贴墙特工", desc: "必须时刻贴墙移动，空旷地带≤2秒。", weight: 4, difficulty: "普通" },
+        { name: "⏳ 杀戮惩罚", desc: "每击杀一人必须原地蹲下5秒。", weight: 3, difficulty: "地狱" },
+        { name: "💣 拆蛋专家", desc: "进攻方下包前不能开枪；防守方拆包时限10秒。", weight: 3, difficulty: "普通" },
+        { name: "👥 连体婴", desc: "整局跟随一名随机队友行动。", weight: 4, difficulty: "娱乐" },
+        { name: "🏆 谦逊姿态", desc: "大比分领先时禁用投掷道具。", weight: 3, difficulty: "普通" },
+        { name: "📦 弹药匮乏", desc: "每个弹匣打完前禁止换弹。", weight: 3, difficulty: "普通" },
+        { name: "🕋 定点炮台", desc: "每回合必须在一个区域坚守15秒以上。", weight: 3, difficulty: "普通" },
+        { name: "🌪️ 狂战士", desc: "不能静步，全程奔跑移动开火。", weight: 3, difficulty: "地狱" },
+        { name: "🎭 模仿大师", desc: "每回合模仿队内随机一名队友的主武器。", weight: 2, difficulty: "娱乐" },
+        { name: "⚡ 无甲大枪", desc: "0护甲 + 必须起≥2900的主战武器。", weight: 2, difficulty: "地狱" },
+        { name: "🎲 轮盘赌徒", desc: "每回合强制更换武器类型循环。", weight: 2, difficulty: "娱乐" },
+        { name: "⛔ 换弹定身", desc: "换弹期间不能移动。", weight: 3, difficulty: "普通" },
+        { name: "🌀 道具僵直", desc: "每使用道具，接下来三秒原地不动。", weight: 3, difficulty: "地狱" },
+        { name: "🔁 三杀轮换", desc: "每击杀三名敌人，下回合更换武器品类。", weight: 2, difficulty: "普通" },
+        { name: "💰 貔貅存钱", desc: "经济溢出不消费，只用初始或捡枪。", weight: 1, difficulty: "娱乐" },
+        { name: "☁️ 烟中恶鬼", desc: "烟雾未消散绝不踏入烟内。", weight: 3, difficulty: "普通" },
+        { name: "🔇 电台静默", desc: "禁止报点，只靠小地图。", weight: 2, difficulty: "普通" },
+        { name: "🚶 单人成军", desc: "禁止与队友同一视野超5秒。", weight: 2, difficulty: "地狱" },
+        { name: "🧠 先读大师", desc: "每回合前20秒原地不动看地图。", weight: 3, difficulty: "普通" },
+        { name: "🩹 医疗禁断", desc: "禁止任何治疗效果。", weight: 3, difficulty: "地狱" },
+        { name: "⏱️ 极速枪神", desc: "接触敌人5秒内必须击杀否则撤退。", weight: 3, difficulty: "地狱" },
+        { name: "🔪 刀光剑影", desc: "每局至少一次近战击杀。", weight: 2, difficulty: "娱乐" },
+        { name: "🧩 技能轮空", desc: "每回合只能用一个技能。", weight: 3, difficulty: "普通" },
+        { name: "🕺 跳舞机", desc: "击杀后原地ADAD晃动2秒。", weight: 2, difficulty: "娱乐" },
+        { name: "🧿 无UI模式", desc: "禁止看小地图/血条等HUD。", weight: 2, difficulty: "地狱" },
+        { name: "🔄 死亡换枪", desc: "死亡后下回合必须用击杀者的武器。", weight: 2, difficulty: "普通" },
+        { name: "🛌 睡梦罗汉", desc: "每回合开局前15秒原地不动。", weight: 2, difficulty: "娱乐" },
+        { name: "🧱 掩体依赖", desc: "对枪时身体≤50%露出。", weight: 3, difficulty: "普通" },
+        { name: "📢 千里传音", desc: "射击前喊“我要开枪了”。", weight: 2, difficulty: "娱乐" },
+        { name: "🧠 逆向思维", desc: "准星不准放在敌人身上超0.5秒。", weight: 3, difficulty: "地狱" },
+        { name: "🚫 禁止跳跃射击", desc: "跳跃中射击则失败。", weight: 2, difficulty: "普通" },
+        { name: "🧩 技能绑定", desc: "使用技能后立即换弹。", weight: 2, difficulty: "普通" },
+        { name: "🕶️ 隐身斗篷", desc: "永远不能率先开枪。", weight: 2, difficulty: "地狱" },
+        { name: "📍 移动炮台", desc: "坚守15秒才能转移位置。", weight: 2, difficulty: "普通" },
+        { name: "🔄 子弹轮回", desc: "击杀后切副武器射击一次再切回。", weight: 2, difficulty: "普通" },
+        { name: "🎭 角色扮演", desc: "模仿英雄背景性格。", weight: 2, difficulty: "娱乐" },
+        { name: "📦 弹药节约", desc: "每匣最多射10发子弹。", weight: 2, difficulty: "普通" },
+        { name: "🔪 处决者", desc: "手枪打残后切刀完成最后一击。", weight: 2, difficulty: "娱乐" },
+        { name: "🧩 无效技能", desc: "每回合随机禁用自己一个技能。", weight: 2, difficulty: "地狱" },
+        { name: "📢 喇叭战士", desc: "全程最大音量脚步/枪声。", weight: 2, difficulty: "娱乐" },
+        { name: "🚶 跟随弹道", desc: "腰射时必须边走边射。", weight: 2, difficulty: "普通" },
+        { name: "🎲 随机主武器", desc: "每回合主武器随机。", weight: 2, difficulty: "娱乐" },
+        { name: "🧱 掩体跳跃", desc: "换弹时必须跳出掩体。", weight: 2, difficulty: "普通" },
+        { name: "📢 战术广播", desc: "移动前大喊“我移动了”。", weight: 2, difficulty: "娱乐" },
+        { name: "🧠 预瞄强迫症", desc: "准星永远放爆头线。", weight: 2, difficulty: "普通" },
+        { name: "🔦 光照不足", desc: "禁用照亮敌方技能。", weight: 2, difficulty: "普通" },
+        { name: "🎭 沉默互换", desc: "每死一次更换英雄玩法风格。", weight: 2, difficulty: "娱乐" },
+        { name: "🔄 武器轮盘", desc: "每回合换主武器类型不可重复。", weight: 2, difficulty: "普通" },
+        { name: "🧹 零购买护甲", desc: "不准买护甲，初始0甲。", weight: 2, difficulty: "地狱" },
+        { name: "📢 自我解说", desc: "击杀大喊“爆头！”等。", weight: 2, difficulty: "娱乐" },
+        { name: "🚶 后退射击", desc: "开枪时按S后退。", weight: 2, difficulty: "普通" },
+        { name: "🧩 大招禁断", desc: "整局不准用X大招。", weight: 3, difficulty: "普通" },
+        { name: "📍 定点蹲守", desc: "每回合固定位置蹲守20秒。", weight: 2, difficulty: "普通" },
+        { name: "🔪 刀战狂热", desc: "至少一回合只用刀。", weight: 1, difficulty: "娱乐" },
+        { name: "🎲 经济破产", desc: "每回合花光所有钱。", weight: 2, difficulty: "娱乐" }
+    ];
+
+    let customChallenges = [];
+    function loadCustom() {
+        try {
+            const stored = localStorage.getItem("valRandom_custom");
+            if(stored) customChallenges = JSON.parse(stored);
+        } catch(e) {}
+    }
+    function saveCustom() {
+        localStorage.setItem("valRandom_custom", JSON.stringify(customChallenges));
+    }
+    function addCustomChallenge(name, desc, difficulty) {
+        if(!name.trim()) return;
+        customChallenges.push({ name: name.trim(), desc: desc.trim(), weight: 2, difficulty: difficulty });
+        saveCustom();
+        renderCustomList();
+    }
+    function deleteCustomChallenge(index) {
+        customChallenges.splice(index,1);
+        saveCustom();
+        renderCustomList();
+    }
+    function renderCustomList() {
+        const container = document.getElementById("customList");
+        if(!container) return;
+        if(customChallenges.length===0) {
+            container.innerHTML = "<div style='color:#8e9fc3;'>暂无自定义挑战</div>";
+            return;
+        }
+        let html = "";
+        customChallenges.forEach((ch, idx) => {
+            html += `<div style="display:flex; justify-content:space-between; margin-bottom:0.3rem;">
+                        <span style="flex:1;">${ch.name} (${ch.difficulty})</span>
+                        <button class="btn-icon" data-delidx="${idx}">🗑️</button>
+                    </div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll("[data-delidx]").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const idx = parseInt(btn.getAttribute("data-delidx"));
+                deleteCustomChallenge(idx);
+            });
+        });
+    }
+
+    function getFullChallengeDB() {
+        return [...BASE_CHALLENGES, ...customChallenges];
+    }
+
+    function getRandomChallenge() {
+        const pool = getFullChallengeDB();
+        if(pool.length === 0) return { name: "无挑战", desc: "请添加自定义挑战", difficulty: "普通" };
+        let totalWeight = pool.reduce((s,c)=>s+(c.weight||2),0);
+        let rand = Math.random() * totalWeight;
+        let acc = 0;
+        for(let c of pool) {
+            acc += (c.weight||2);
+            if(rand <= acc) return c;
+        }
+        return pool[0];
+    }
+
+    function getWeightedRandomUnique(pool, count) {
+        if (count > pool.length) count = pool.length;
+        let result = [];
+        let remaining = [...pool];
+        for (let i = 0; i < count; i++) {
+            let totalWeight = remaining.reduce((s,c)=>s+(c.weight||2),0);
+            let rand = Math.random() * totalWeight;
+            let acc = 0;
+            let selectedIndex = 0;
+            for (let j = 0; j < remaining.length; j++) {
+                acc += (remaining[j].weight||2);
+                if (rand <= acc) {
+                    selectedIndex = j;
+                    break;
+                }
+            }
+            result.push(remaining[selectedIndex]);
+            remaining.splice(selectedIndex, 1);
+        }
+        return result;
+    }
+
+    function sampleWithoutReplacement(arr, n) {
+        if (n <= 0) return [];
+        if (n >= arr.length) return [...arr];
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled.slice(0, n);
+    }
+
+    function getRandomWeapon() { return WEAPONS[Math.floor(Math.random() * WEAPONS.length)]; }
+
+    // 核心状态
+    let currentMode = "simple";
+    let currentTeamCards = [];
+    let currentSimpleCards = [];
+    const container = document.getElementById("cardsContainer");
+    const switchWrapper = document.getElementById("switchWrapper");
+    const broadcastListDiv = document.getElementById("broadcastList");
+
+    function addBroadcastMessage(msg) {
+        if (!broadcastListDiv) return;
+        const time = new Date().toLocaleTimeString();
+        const item = document.createElement("div");
+        item.className = "broadcast-item";
+        item.innerHTML = `<span>📢 ${escapeHtml(msg)}</span><span class="broadcast-time">${time}</span>`;
+        broadcastListDiv.prepend(item);
+        while (broadcastListDiv.children.length > 10) broadcastListDiv.removeChild(broadcastListDiv.lastChild);
+        if (broadcastListDiv.children.length === 0) {
+            broadcastListDiv.innerHTML = '<div style="color:#8e9fc3;">等待操作……</div>';
+        }
+    }
+
+    function render() {
+        if (currentMode === "simple") {
+            if (!currentSimpleCards.length) {
+                container.innerHTML = `<div class="empty-state">✨ 点击“随机生成” ✨</div>`;
+                return;
+            }
+            let html = "";
+            currentSimpleCards.forEach((card) => {
+                const challengeName = `${card.challenge.name} (${card.challenge.difficulty})`;
+                html += `<div class="challenge-card"><div class="card-side">🎲 通用挑战</div><div class="hero-name">${escapeHtml(card.hero)}</div><div class="weapon-block"><div class="weapon-name">🔫 ${escapeHtml(card.weapon)}</div></div><div class="challenge-block"><div class="challenge-name">⚡ ${escapeHtml(challengeName)}</div><div>${escapeHtml(card.challenge.desc)}</div></div></div>`;
+            });
+            container.innerHTML = html;
+        } else {
+            if (!currentTeamCards.length) {
+                container.innerHTML = `<div class="empty-state">👥 请通过团队随机生成方案 👥</div>`;
+                return;
+            }
+            let html = "";
+            currentTeamCards.forEach((item) => {
+                let sideLabel = (item.currentSide === "attack") ? "⚔️ 进攻策略" : "🛡️ 防守策略";
+                let strategy = (item.currentSide === "attack") ? item.attackStrategy : item.defendStrategy;
+                const challengeName = `${strategy.challenge.name} (${strategy.challenge.difficulty})`;
+                html += `<div class="challenge-card"><div class="card-side">${sideLabel}</div><div class="hero-name">${escapeHtml(item.hero)}</div><div class="weapon-block"><div class="weapon-name">🔫 ${escapeHtml(strategy.weapon)}</div></div><div class="challenge-block"><div class="challenge-name">⚠️ ${escapeHtml(challengeName)}</div><div>${escapeHtml(strategy.challenge.desc)}</div></div></div>`;
+            });
+            container.innerHTML = html;
+        }
+    }
+
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+
+    // 简单随机生成
+    function generateSimple(count) {
+        const heroes = [];
+        for(let i=0; i<count; i++) heroes.push(ALL_AGENTS[Math.floor(Math.random() * ALL_AGENTS.length)]);
+        const cards = heroes.map(hero => ({
+            hero: hero,
+            weapon: getRandomWeapon(),
+            challenge: getRandomChallenge()
+        }));
+        currentSimpleCards = cards;
+        currentMode = "simple";
+        switchWrapper.style.display = "none";
+        render();
+        addHistoryRecord(cards);
+        const msg = `✨ 生成了 ${count} 个随机挑战 ✨`;
+        addBroadcastMessage(msg);
+        if (currentRoomId) saveRoomState("simple", currentSimpleCards).then(() => broadcastToRoom(msg));
+        else broadcastToRoom(msg);
+    }
+
+    // 团队随机生成
+    function generateTeamFromModal(duel, init, cont, sent) {
+        let heroes = [];
+        const total = duel + init + cont + sent;
+        const isSmallTeam = total <= 5;
+
+        if (isSmallTeam) {
+            heroes.push(...sampleWithoutReplacement(AGENTS_BY_ROLE.duelist, duel));
+            heroes.push(...sampleWithoutReplacement(AGENTS_BY_ROLE.initiator, init));
+            heroes.push(...sampleWithoutReplacement(AGENTS_BY_ROLE.controller, cont));
+            heroes.push(...sampleWithoutReplacement(AGENTS_BY_ROLE.sentinel, sent));
+        } else {
+            const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+            for(let i=0;i<duel;i++) heroes.push(pick(AGENTS_BY_ROLE.duelist));
+            for(let i=0;i<init;i++) heroes.push(pick(AGENTS_BY_ROLE.initiator));
+            for(let i=0;i<cont;i++) heroes.push(pick(AGENTS_BY_ROLE.controller));
+            for(let i=0;i<sent;i++) heroes.push(pick(AGENTS_BY_ROLE.sentinel));
+        }
+
+        if(heroes.length === 0) { alert("至少选一个角色"); return false; }
+
+        const fullPool = getFullChallengeDB();
+        let attackChallenges, defendChallenges;
+        if (isSmallTeam) {
+            attackChallenges = getWeightedRandomUnique(fullPool, heroes.length);
+            defendChallenges = getWeightedRandomUnique(fullPool, heroes.length);
+        } else {
+            attackChallenges = [...fullPool].sort(()=>0.5-Math.random()).slice(0, heroes.length);
+            defendChallenges = [...fullPool].sort(()=>0.5-Math.random()).slice(0, heroes.length);
+        }
+
+        currentTeamCards = heroes.map((h,idx) => ({
+            hero:h, currentSide:"attack",
+            attackStrategy:{ weapon: getRandomWeapon(), challenge: attackChallenges[idx] },
+            defendStrategy:{ weapon: getRandomWeapon(), challenge: defendChallenges[idx] }
+        }));
+        for(let i=currentTeamCards.length-1;i>0;i--) {
+            const j=Math.floor(Math.random()*(i+1));
+            [currentTeamCards[i], currentTeamCards[j]] = [currentTeamCards[j], currentTeamCards[i]];
+        }
+        currentMode="team";
+        switchWrapper.style.display = "flex";
+        render();
+        const msg = `👥 生成了 ${heroes.length} 人团队阵容（含攻防策略）`;
+        addBroadcastMessage(msg);
+        if (currentRoomId) saveRoomState("team", currentTeamCards).then(() => broadcastToRoom(msg));
+        else broadcastToRoom(msg);
+        return true;
+    }
+
+    function switchSide() {
+        if(currentMode!=="team") return;
+        for(let c of currentTeamCards) c.currentSide = c.currentSide==="attack"?"defend":"attack";
+        render();
+        const newSide = currentTeamCards[0]?.currentSide === "attack" ? "进攻" : "防守";
+        const msg = `🔄 切换到${newSide}策略`;
+        addBroadcastMessage(msg);
+        if (currentRoomId) saveRoomState("team", currentTeamCards).then(() => broadcastToRoom(msg));
+        else broadcastToRoom(msg);
+    }
+
+    // 历史记录与收藏夹
+    let historyRecords = [];
+    let favourites = [];
+    let nextId = 1;
+    function loadStorage() {
+        try {
+            const h = localStorage.getItem("valRandom_history");
+            if(h) historyRecords = JSON.parse(h);
+            const f = localStorage.getItem("valRandom_favs");
+            if(f) favourites = JSON.parse(f);
+            const id = localStorage.getItem("valRandom_nextId");
+            if(id) nextId = parseInt(id);
+        } catch(e) {}
+    }
+    function saveStorage() {
+        localStorage.setItem("valRandom_history", JSON.stringify(historyRecords));
+        localStorage.setItem("valRandom_favs", JSON.stringify(favourites));
+        localStorage.setItem("valRandom_nextId", nextId);
+    }
+    function addHistoryRecord(cards) {
+        const record = { id: nextId++, timestamp: Date.now(), count: cards.length, cards: cards.map(c => ({ hero: c.hero, weapon: c.weapon, challenge: c.challenge })) };
+        historyRecords.unshift(record);
+        if(historyRecords.length > 30) historyRecords.pop();
+        saveStorage();
+        renderHistory();
+        return record;
+    }
+    function deleteHistoryRecord(id) {
+        historyRecords = historyRecords.filter(r => r.id !== id);
+        saveStorage();
+        renderHistory();
+    }
+    function addFavourite(record) {
+        if(favourites.some(f => f.recordId === record.id)) return;
+        favourites.push({ id: nextId++, recordId: record.id, timestamp: Date.now(), cards: record.cards });
+        saveStorage();
+        renderFavourites();
+    }
+    function removeFavourite(favId) {
+        favourites = favourites.filter(f => f.id !== favId);
+        saveStorage();
+        renderFavourites();
+    }
+    function renderHistory() {
+        const container = document.getElementById("historyList");
+        if(!container) return;
+        if(historyRecords.length === 0) { container.innerHTML = '<div style="color:#8e9fc3;">暂无记录</div>'; return; }
+        let html = "";
+        historyRecords.forEach(rec => {
+            const date = new Date(rec.timestamp).toLocaleTimeString();
+            html += `<div class="history-item"><div class="history-info" data-id="${rec.id}">📋 ${date} (${rec.count}个)</div><button class="btn-icon fav-btn" data-id="${rec.id}">❤️</button><button class="btn-icon del-btn" data-id="${rec.id}">🗑️</button></div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll(".history-info").forEach(el => {
+            el.addEventListener("click", (e) => {
+                const id = parseInt(el.getAttribute("data-id"));
+                const rec = historyRecords.find(r => r.id === id);
+                if(rec) {
+                    currentSimpleCards = rec.cards.map(c => ({ hero: c.hero, weapon: c.weapon, challenge: c.challenge }));
+                    currentMode = "simple";
+                    switchWrapper.style.display = "none";
+                    render();
+                    addBroadcastMessage(`📜 加载了历史记录 (${rec.count}个挑战)`);
+                }
+            });
+        });
+        document.querySelectorAll(".fav-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute("data-id"));
+                const rec = historyRecords.find(r => r.id === id);
+                if(rec) addFavourite(rec);
+            });
+        });
+        document.querySelectorAll(".del-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute("data-id"));
+                deleteHistoryRecord(id);
+            });
+        });
+    }
+    function renderFavourites() {
+        const container = document.getElementById("favouritesList");
+        if(!container) return;
+        if(favourites.length === 0) { container.innerHTML = '<div style="color:#8e9fc3;">暂无收藏</div>'; return; }
+        let html = "";
+        favourites.forEach(fav => {
+            const date = new Date(fav.timestamp).toLocaleTimeString();
+            html += `<div class="fav-item"><div class="fav-info" data-favid="${fav.id}">⭐ ${date} (${fav.cards.length}个)</div><button class="btn-icon unfav-btn" data-favid="${fav.id}">💔</button></div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll(".fav-info").forEach(el => {
+            el.addEventListener("click", (e) => {
+                const favId = parseInt(el.getAttribute("data-favid"));
+                const fav = favourites.find(f => f.id === favId);
+                if(fav) {
+                    currentSimpleCards = fav.cards.map(c => ({ hero: c.hero, weapon: c.weapon, challenge: c.challenge }));
+                    currentMode = "simple";
+                    switchWrapper.style.display = "none";
+                    render();
+                    addBroadcastMessage(`⭐ 加载了收藏记录 (${fav.cards.length}个挑战)`);
+                }
+            });
+        });
+        document.querySelectorAll(".unfav-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const favId = parseInt(btn.getAttribute("data-favid"));
+                removeFavourite(favId);
+            });
+        });
+    }
+
+    // 自定义调整内容保存
+    const customAdjustTextarea = document.getElementById("customAdjustText");
+    const saveAdjustBtn = document.getElementById("saveAdjustBtn");
+    function loadCustomAdjust() {
+        const saved = localStorage.getItem("valRandom_customAdjust");
+        if(saved !== null) customAdjustTextarea.value = saved;
+        else customAdjustTextarea.value = "";
+    }
+    function saveCustomAdjust() {
+        localStorage.setItem("valRandom_customAdjust", customAdjustTextarea.value);
+        saveAdjustBtn.classList.add("btn-flash");
+        setTimeout(() => saveAdjustBtn.classList.remove("btn-flash"), 400);
+        addBroadcastMessage("📝 自定义调整内容已保存");
+    }
+    saveAdjustBtn.addEventListener("click", saveCustomAdjust);
+    customAdjustTextarea.addEventListener("blur", () => {
+        localStorage.setItem("valRandom_customAdjust", customAdjustTextarea.value);
+    });
+
+    // 备注区保存/加载
+    const globalRemarkInput = document.getElementById("globalRemark");
+    const saveRemarkBtn = document.getElementById("saveRemarkBtn");
+    function loadGlobalRemark() {
+        const saved = localStorage.getItem("valRandom_globalRemark");
+        if(saved !== null) globalRemarkInput.value = saved;
+        else globalRemarkInput.value = "";
+    }
+    function saveGlobalRemark() {
+        localStorage.setItem("valRandom_globalRemark", globalRemarkInput.value);
+        addBroadcastMessage("💾 备注已保存");
+    }
+    saveRemarkBtn.addEventListener("click", saveGlobalRemark);
+    loadGlobalRemark();
+
+    // ==================== Supabase 多人房间功能 ====================
+    const SUPABASE_URL = "https://vbrbjgzltmmgjvgaonnm.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_Fd0w-wYa7Z_yTe6d9ed98A_E_WXArxi";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentRoomId = null;
+    let roomChannel = null;
+    let lastBroadcastId = 0;
+
+    async function saveRoomState(mode, data) {
+        if (!currentRoomId) return;
+        const state = { mode, data };
+        const { error } = await supabaseClient
+            .from('rooms')
+            .upsert({ id: currentRoomId, data: state, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+        if (error) console.error("保存房间状态失败", error);
+    }
+
+    async function loadRoomFromSupabase(roomId) {
+        const { data, error } = await supabaseClient
+            .from('rooms')
+            .select('data, updated_at')
+            .eq('id', roomId)
+            .single();
+        if (error && error.code !== 'PGRST116') return null;
+        if (!data) return null;
+        return { data: data.data, updated_at: data.updated_at };
+    }
+
+    function applyRoomState(state) {
+        if (!state) return;
+        if (state.mode === "simple") {
+            currentSimpleCards = state.data;
+            currentMode = "simple";
+            switchWrapper.style.display = "none";
+            render();
+        } else if (state.mode === "team") {
+            currentTeamCards = state.data;
+            currentMode = "team";
+            switchWrapper.style.display = "flex";
+            render();
+        }
+    }
+
+    async function subscribeToRoom(roomId) {
+        if (roomChannel) await roomChannel.unsubscribe();
+        roomChannel = supabaseClient
+            .channel(`room-${roomId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'rooms',
+                filter: `id=eq.${roomId}`
+            }, (payload) => {
+                if (payload.new && payload.new.data) {
+                    applyRoomState(payload.new.data);
+                }
+            })
+            .subscribe();
+    }
+
+    async function broadcastToRoom(message) {
+        if (!currentRoomId) return;
+        const broadcast = { msg: message, time: Date.now(), id: Math.random() };
+        lastBroadcastId = broadcast.id;
+        const { data: roomData } = await supabaseClient
+            .from('rooms')
+            .select('data')
+            .eq('id', currentRoomId)
+            .single();
+        const existingData = roomData?.data || { mode: "simple", data: [] };
+        await supabaseClient
+            .from('rooms')
+            .upsert({
+                id: currentRoomId,
+                data: existingData,
+                broadcast: broadcast,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'id' });
+        // 同时自己也显示广播（已在调用处 addBroadcastMessage，但避免重复，这里不重复添加）
+    }
+
+    // 监听广播变化（单独订阅广播）
+    let broadcastChannel = null;
+    async function subscribeBroadcast(roomId) {
+        if (broadcastChannel) await broadcastChannel.unsubscribe();
+        broadcastChannel = supabaseClient
+            .channel(`broadcast-${roomId}`)
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'rooms',
+                filter: `id=eq.${roomId}`
+            }, (payload) => {
+                if (payload.new && payload.new.broadcast && payload.new.broadcast.id !== lastBroadcastId) {
+                    addBroadcastMessage(payload.new.broadcast.msg);
+                }
+            })
+            .subscribe();
+    }
+
+    async function joinRoom(roomId) {
+        if (!roomId) return alert("请输入房间号");
+        currentRoomId = roomId;
+        document.getElementById("roomStatus").innerText = `[连接中...]`;
+        if (roomChannel) await roomChannel.unsubscribe();
+        if (broadcastChannel) await broadcastChannel.unsubscribe();
+
+        const existing = await loadRoomFromSupabase(roomId);
+        if (existing) {
+            const now = new Date();
+            const lastUpdate = new Date(existing.updated_at);
+            const diffMinutes = (now - lastUpdate) / (1000 * 60);
+            if (diffMinutes > 5) {
+                await supabaseClient.from('rooms').delete().eq('id', roomId);
+            } else {
+                applyRoomState(existing.data);
+                document.getElementById("roomStatus").innerText = `[房间 ${roomId}] 已加入`;
+                await subscribeToRoom(roomId);
+                await subscribeBroadcast(roomId);
+                addBroadcastMessage(`✅ 已加入房间 ${roomId}`);
+                return;
+            }
+        }
+
+        const count = parseInt(document.getElementById("randomCountInput").value) || 5;
+        const newIdentities = [];
+        for (let i = 0; i < count; i++) {
+            newIdentities.push({
+                hero: ALL_AGENTS[Math.floor(Math.random() * ALL_AGENTS.length)],
+                weapon: getRandomWeapon(),
+                challenge: getRandomChallenge()
+            });
+        }
+        applyRoomState({ mode: "simple", data: newIdentities });
+        await saveRoomState("simple", newIdentities);
+        document.getElementById("roomStatus").innerText = `[房间 ${roomId}] 已创建（房主）`;
+        await subscribeToRoom(roomId);
+        await subscribeBroadcast(roomId);
+        addBroadcastMessage(`🏠 创建了房间 ${roomId}，你是房主`);
+    }
+
+    document.getElementById("joinRoomBtn").onclick = () => {
+        const room = document.getElementById("roomInput").value.trim();
+        if (room) joinRoom(room);
+    };
+
+    // 随机工具
+    function randomWeapon() {
+        const weapon = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
+        const msg = `🔫 随机武器 → ${weapon}`;
+        addBroadcastMessage(msg);
+        broadcastToRoom(msg);
+    }
+    function randomHero() {
+        const hero = ALL_AGENTS[Math.floor(Math.random() * ALL_AGENTS.length)];
+        const msg = `🦸 随机英雄 → ${hero}`;
+        addBroadcastMessage(msg);
+        broadcastToRoom(msg);
+    }
+    function showRandomNumberPanel() {
+        document.getElementById("randomNumberPanel").style.display = "block";
+        document.getElementById("resultText").style.display = "none";
+        document.getElementById("randDisplay").innerHTML = "—";
+        document.getElementById("resultPanel").style.display = "block";
+    }
+    function generateRandomNumber() {
+        let min = parseInt(document.getElementById("randMinInput").value)||1;
+        let max = parseInt(document.getElementById("randMaxInput").value)||100;
+        if(min>max)[min,max]=[max,min];
+        let val = Math.floor(Math.random()*(max-min+1))+min;
+        const msg = `🎲 随机数 ${min}~${max} → ${val}`;
+        addBroadcastMessage(msg);
+        broadcastToRoom(msg);
+        document.getElementById("randDisplay").innerHTML = `🎲 结果：<strong>${val}</strong> (${min}~${max})`;
+    }
+
+    document.getElementById("randomNumberBtn").onclick = showRandomNumberPanel;
+    document.getElementById("randomWeaponBtn").onclick = randomWeapon;
+    document.getElementById("randomHeroBtn").onclick = randomHero;
+    document.getElementById("confirmRandBtn").onclick = generateRandomNumber;
+
+    // 其他事件绑定
+    document.getElementById("simpleRandomBtn").onclick = () => {
+        let count = parseInt(document.getElementById("randomCountInput").value) || 5;
+        if (count < 1) count = 1;
+        if (count > 10) count = 10;
+        generateSimple(count);
+    };
+    document.getElementById("teamRandomBtn").onclick = () => document.getElementById("teamModal").style.display = "flex";
+    document.getElementById("cancelTeamBtn").onclick = () => document.getElementById("teamModal").style.display = "none";
+    document.getElementById("confirmTeamBtn").onclick = () => {
+        let d=parseInt(document.getElementById("duelistCount").value)||0;
+        let i=parseInt(document.getElementById("initiatorCount").value)||0;
+        let c=parseInt(document.getElementById("controllerCount").value)||0;
+        let s=parseInt(document.getElementById("sentinelCount").value)||0;
+        generateTeamFromModal(d,i,c,s);
+        document.getElementById("teamModal").style.display = "none";
+    };
+    document.getElementById("randomTeamBtn").onclick = () => {
+        let total = parseInt(document.getElementById("randomTeamSize").value);
+        if(total<=0) return;
+        let d=Math.floor(Math.random()*(total+1));
+        let rem=total-d;
+        let i=Math.floor(Math.random()*(rem+1));
+        rem-=i;
+        let c=Math.floor(Math.random()*(rem+1));
+        let s=rem-c;
+        document.getElementById("duelistCount").value=d;
+        document.getElementById("initiatorCount").value=i;
+        document.getElementById("controllerCount").value=c;
+        document.getElementById("sentinelCount").value=s;
+    };
+    document.getElementById("switchSideBtn").onclick = switchSide;
+    document.getElementById("clearHistoryBtn").onclick = () => { historyRecords = []; saveStorage(); renderHistory(); };
+    document.getElementById("clearFavBtn").onclick = () => { favourites = []; saveStorage(); renderFavourites(); };
+
+    const customModal = document.getElementById("customModal");
+    document.getElementById("openCustomBtn").onclick = () => {
+        renderCustomList();
+        customModal.style.display = "flex";
+    };
+    document.getElementById("closeCustomBtn").onclick = () => customModal.style.display = "none";
+    document.getElementById("saveCustomBtn").onclick = () => {
+        const name = document.getElementById("customName").value;
+        const desc = document.getElementById("customDesc").value;
+        const diff = document.getElementById("customDifficulty").value;
+        if(!name.trim()) { alert("请输入挑战名称"); return; }
+        addCustomChallenge(name, desc, diff);
+        document.getElementById("customName").value = "";
+        document.getElementById("customDesc").value = "";
+        const msg = `➕ 添加了自定义挑战“${name}”`;
+        addBroadcastMessage(msg);
+        broadcastToRoom(msg);
+    };
+    customModal.onclick = (e) => { if(e.target === customModal) customModal.style.display = "none"; };
+
+    const mottoList = ["I know I'm STILL SHINING","存档 读档 升级 这就是人生","情绪总被左右，好像忘记了什么","战斗力已经拉满，但还是忘了什么","Dizzy問題とかどうする？点Pとかどうする？","最高で最強！","加强霓虹！！！！！！！！！！","没关系的错就错吧"];
+    let mottoIdx = 0;
+    const mottoEl = document.getElementById("mottoText");
+    document.getElementById("cycleMottoBtn").onclick = () => { mottoIdx = (mottoIdx+1)%mottoList.length; mottoEl.innerText = mottoList[mottoIdx]; };
+    mottoEl.innerText = mottoList[0];
+
+    // 初始化
+    loadStorage();
+    loadCustom();
+    loadCustomAdjust();
+    renderHistory();
+    renderFavourites();
+    generateSimple(5);
+</script>
+</body>
+</html>
