@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>自定义随机转盘 · 无畏契约工具</title>
+    <title>自定义随机转盘</title>
     <style>
         * {
             margin: 0;
@@ -25,7 +25,7 @@
             position: relative;
         }
 
-        /* 右上角作者（与 index.html 一致） */
+        /* 右上角作者 */
         .author-corner {
             position: fixed;
             top: 1rem;
@@ -41,6 +41,13 @@
             border: 1px solid rgba(255, 215, 150, 0.3);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
+        .author-corner a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: inherit;
+        }
         .author-avatar {
             width: 32px;
             height: 32px;
@@ -55,52 +62,10 @@
             letter-spacing: 0.5px;
         }
         .author-name span {
-            font-weight: 700;
-            color: #ffbc6e;
+            transition: color 0.2s ease;
         }
-
-        /* 背景横幅（与 index.html 一致） */
-        .hero-banner {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            max-height: 260px;
-            border-radius: 2rem;
-            overflow: hidden;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 25px -8px black;
-            cursor: pointer;
-        }
-        .hero-banner-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('images/bg.jpg');
-            background-size: cover;
-            background-position: center center;
-            filter: brightness(0.85);
-            transition: 0.3s;
-        }
-        .hero-banner:hover .hero-banner-bg {
-            filter: brightness(1.0);
-            transform: scale(1.01);
-        }
-        .banner-text {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: 800;
-            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
-            backdrop-filter: brightness(1.1);
-            letter-spacing: 4px;
-            color: #fff3cf;
-            font-family: monospace;
+        .author-corner a:hover .author-name span {
+            color: rgb(64, 194, 246);
         }
 
         /* 主卡片区域 */
@@ -335,18 +300,13 @@
 <div class="container">
     <!-- 右上角作者 -->
     <div class="author-corner">
-    <a href="aboutme.html" target="_blank" title="进入关于作者" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-        <img class="author-avatar" src="images/avatar.png" alt="avatar" onerror="this.src='https://s3.bmp.ovh/2026/06/07/uxmqGfg7.png'">
-        <div class="author-name">📌 <span>@BeiMing257</span></div>
-    </a>
-</div>
-
-    <!-- 背景横幅 -->
-    <div class="hero-banner">
-        <div class="hero-banner-bg"></div>
-        <div class="banner-text">🎲 随机小工具 🎲</div>
+        <a href="aboutme.html" target="_blank" title="进入关于作者">
+            <img class="author-avatar" src="images/avatar.png" alt="avatar" onerror="this.src='https://s3.bmp.ovh/2026/06/07/uxmqGfg7.png'">
+            <div class="author-name">📌 <span>@BeiMing257</span></div>
+        </a>
     </div>
 
+    <!-- 主卡片（已移除横幅） -->
     <div class="main-card">
         <div class="wheel-title-editor">
             <label>🎡 转盘名称：</label>
@@ -411,7 +371,6 @@
     const wheelTitleInput = document.getElementById('wheelTitleInput');
     const titleDisplay = document.getElementById('titleDisplay');
 
-    // 更新标题显示
     function updateTitleDisplay() {
         const title = wheelTitleInput.value.trim();
         titleDisplay.innerText = title || '自定义随机转盘';
@@ -627,7 +586,6 @@
     document.getElementById('resetDefaultBtn').addEventListener('click', resetDefault);
     document.getElementById('clearAllBtn').addEventListener('click', clearAll);
 
-    // 初始化
     resetDefault();
 </script>
 </body>
