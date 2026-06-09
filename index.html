@@ -54,6 +54,10 @@
             color: #ffdd99;
             letter-spacing: 0.5px;
         }
+        .author-corner a:hover .author-name span {
+            color: rgb(64, 194, 246);
+            transition: color 0.2s ease;
+        }
         .author-name span {
             font-weight: 700;
             color: #ffbc6e;
@@ -602,8 +606,10 @@
 <body>
 <div class="container">
     <div class="author-corner">
-        <img class="author-avatar" src="images/avatar.png" alt="avatar">
-        <div class="author-name">📌 <span>@BeiMing257</span></div>
+        <a href="aboutme.html" title="进入关于作者" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit;">
+            <img class="author-avatar" src="images/avatar.png" alt="avatar">
+            <div class="author-name">📌 <span>@BeiMing257</span></div>
+        </a>
     </div>
 
     <div class="hero-banner">
