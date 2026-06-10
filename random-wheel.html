@@ -1,32 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <link rel="icon" type="image/png" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>自定义随机转盘</title>
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0b0f1a;
-            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', 'Roboto', sans-serif;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
             padding: 1.2rem;
             color: #eef4ff;
             min-height: 100vh;
         }
-
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* 右上角作者 */
+        .container { max-width: 1300px; margin: 0 auto; position: relative; }
         .author-corner {
             position: fixed;
             top: 1rem;
@@ -35,51 +23,28 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(10, 18, 30, 0.75);
+            background: rgba(10,18,30,0.75);
             backdrop-filter: blur(8px);
             padding: 0.4rem 1rem 0.4rem 0.6rem;
             border-radius: 60px;
-            border: 1px solid rgba(255, 215, 150, 0.3);
+            border: 1px solid rgba(255,215,150,0.3);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .author-corner a {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: inherit;
-        }
-        .author-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid #ffbc6e;
-        }
-        .author-name {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #ffdd99;
-            letter-spacing: 0.5px;
-        }
-        .author-name span {
-            transition: color 0.2s ease;
-        }
-        .author-corner a:hover .author-name span {
-            color: rgb(64, 194, 246);
-        }
+        .author-corner a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; }
+        .author-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ffbc6e; }
+        .author-name { font-size: 0.85rem; font-weight: 500; color: #ffdd99; letter-spacing: 0.5px; }
+        .author-name span { transition: color 0.2s ease; }
+        .author-corner a:hover .author-name span { color: rgb(64,194,246); }
 
-        /* 主卡片区域 */
         .main-card {
-            background: rgba(18, 28, 45, 0.85);
+            background: rgba(18,28,45,0.85);
             backdrop-filter: blur(12px);
             border-radius: 2rem;
-            border: 1px solid rgba(255, 180, 100, 0.3);
+            border: 1px solid rgba(255,180,100,0.3);
             padding: 1.8rem;
             margin-top: 1rem;
             box-shadow: 0 20px 35px -12px black;
         }
-
         .wheel-title-editor {
             text-align: center;
             margin-bottom: 1rem;
@@ -89,10 +54,7 @@
             gap: 0.8rem;
             flex-wrap: wrap;
         }
-        .wheel-title-editor label {
-            color: #ffdd99;
-            font-size: 0.9rem;
-        }
+        .wheel-title-editor label { color: #ffdd99; font-size: 0.9rem; }
         .wheel-title-editor input {
             background: #0f1424;
             border: 1px solid #ffbc6e;
@@ -103,44 +65,16 @@
             text-align: center;
             width: 220px;
         }
-        .current-title {
-            font-size: 1.1rem;
-            color: #ffdd99;
-            font-weight: bold;
-        }
-
-        .sub {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #8e9fc3;
-            margin-bottom: 1.5rem;
-        }
-
-        .flex-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-        }
-
-        .wheel-area {
-            flex: 2;
-            min-width: 280px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-        }
-        .wheel-container {
-            position: relative;
-            display: inline-block;
-        }
+        .current-title { font-size: 1.1rem; color: #ffdd99; font-weight: bold; }
+        .sub { text-align: center; font-size: 0.8rem; color: #8e9fc3; margin-bottom: 1.5rem; }
+        .flex-row { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+        .wheel-area { flex: 2; min-width: 280px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .wheel-container { position: relative; display: inline-block; }
         canvas {
-            width: 100%;
-            max-width: 450px;
-            height: auto;
+            width: 100%; max-width: 450px; height: auto;
             background: #1e243b;
             border-radius: 50%;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
             cursor: pointer;
             display: block;
         }
@@ -149,8 +83,7 @@
             top: -18px;
             left: 50%;
             transform: translateX(-50%);
-            width: 0;
-            height: 0;
+            width: 0; height: 0;
             border-left: 18px solid transparent;
             border-right: 18px solid transparent;
             border-top: 32px solid #ffd966;
@@ -166,7 +99,6 @@
             color: #ffd966;
             text-shadow: 0 2px 2px black;
         }
-
         .result-text {
             margin-top: 1rem;
             font-size: 1.1rem;
@@ -175,31 +107,17 @@
             padding: 0.5rem 1rem;
             border-radius: 2rem;
             color: #ffdd99;
+            text-align: center;
         }
-
         .options-area {
             flex: 1.5;
             min-width: 280px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
             border-radius: 1.5rem;
             padding: 1rem;
         }
-
-        .options-area h3 {
-            color: #ffdd99;
-            margin-bottom: 0.8rem;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .option-list {
-            max-height: 350px;
-            overflow-y: auto;
-            margin-bottom: 1rem;
-        }
-
+        .options-area h3 { color: #ffdd99; margin-bottom: 0.8rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .option-list { max-height: 350px; overflow-y: auto; margin-bottom: 1rem; }
         .option-item {
             display: flex;
             align-items: center;
@@ -238,7 +156,6 @@
             cursor: pointer;
             font-size: 0.7rem;
         }
-
         .add-option {
             display: flex;
             gap: 0.5rem;
@@ -253,10 +170,7 @@
             padding: 0.4rem 0.8rem;
             color: white;
         }
-        .add-option input[type="number"] {
-            max-width: 80px;
-        }
-
+        .add-option input[type="number"] { max-width: 80px; }
         button {
             background: #2a2f3f;
             border: none;
@@ -266,56 +180,28 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        button.primary {
-            background: linear-gradient(135deg, #ff7e5e, #feb47b);
-            color: white;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            background: #3d4459;
-        }
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.8rem;
-            flex-wrap: wrap;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 0.7rem;
-            color: #5c6f97;
-            border-top: 1px solid #232e44;
-            padding-top: 1rem;
-        }
-        .tip {
-            font-size: 0.7rem;
-            color: #8e9fc3;
-            text-align: center;
-            margin-top: 0.5rem;
-        }
+        button.primary { background: linear-gradient(135deg, #ff7e5e, #feb47b); color: white; }
+        button:hover { transform: translateY(-2px); background: #3d4459; }
+        .btn-group { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+        footer { text-align: center; margin-top: 2rem; font-size: 0.7rem; color: #5c6f97; border-top: 1px solid #232e44; padding-top: 1rem; }
+        .tip { font-size: 0.7rem; color: #8e9fc3; text-align: center; margin-top: 0.5rem; }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- 右上角作者 -->
     <div class="author-corner">
         <a href="aboutme.html" target="_blank" title="进入关于作者">
             <img class="author-avatar" src="images/avatar.png" alt="avatar" onerror="this.src='https://s3.bmp.ovh/2026/06/07/uxmqGfg7.png'">
             <div class="author-name">📌 <span>@BeiMing257</span></div>
         </a>
     </div>
-
-    <!-- 主卡片（已移除横幅） -->
     <div class="main-card">
         <div class="wheel-title-editor">
             <label>🎡 转盘名称：</label>
             <input type="text" id="wheelTitleInput" value="自定义随机转盘">
             <span class="current-title" id="titleDisplay"></span>
         </div>
-        <div class="sub">点击转盘旋转 · 自由编辑选项和权重</div>
-
+        <div class="sub">点击转盘旋转 · 权重越大扇形面积越大 · 实时显示结果</div>
         <div class="flex-row">
             <div class="wheel-area">
                 <div class="wheel-container">
@@ -323,9 +209,8 @@
                     <div class="pointer"></div>
                 </div>
                 <div class="result-text" id="resultDisplay">✨ 点击转盘开始 ✨</div>
-                <div class="tip">权重越高，被选中的概率越大</div>
+                <div class="tip">权重影响扇形面积和抽中概率</div>
             </div>
-
             <div class="options-area">
                 <h3>📋 转盘选项（可编辑名称/权重）</h3>
                 <div id="optionListContainer" class="option-list"></div>
@@ -341,29 +226,25 @@
             </div>
         </div>
     </div>
-
     <footer>都是凛拓川干的！ ©2010-现在 禁止使用采集数据和转载商业化</footer>
 </div>
 
 <script>
-    // ---------- 默认选项（名称 + 权重）----------
+    // ---------- 默认选项 ----------
     const DEFAULT_ITEMS = [
         { name: "捷风", weight: 1 },
         { name: "不死鸟", weight: 1 },
         { name: "雷兹", weight: 1 },
         { name: "芮娜", weight: 1 },
-        { name: "夜露", weight: 1 },
-        { name: "霓虹", weight: 1 },
         { name: "狂徒", weight: 2 },
-        { name: "幻影", weight: 2 },
-        { name: "冥驹", weight: 1 },
-        { name: "幽灵静步", weight: 1 },
-        { name: "纸片人", weight: 1 }
+        { name: "幻影", weight: 2 }
     ];
 
     let items = [];
     let rotation = 0;
     let spinning = false;
+    let segmentAngles = [];
+    let totalWeight = 0;
 
     const canvas = document.getElementById('wheelCanvas');
     const ctx = canvas.getContext('2d');
@@ -386,25 +267,36 @@
     ];
     function getColor(idx) { return colorPalette[idx % colorPalette.length]; }
 
+    function calcSegmentAngles() {
+        totalWeight = items.reduce((sum, item) => sum + (item.weight || 1), 0);
+        if (totalWeight === 0) return [];
+        let angles = [];
+        let start = 0;
+        for (let i = 0; i < items.length; i++) {
+            let rad = (items[i].weight / totalWeight) * 2 * Math.PI;
+            angles.push({ start, end: start + rad });
+            start += rad;
+        }
+        return angles;
+    }
+
     function drawWheel() {
         if (!ctx) return;
         const w = canvas.width, h = canvas.height;
         const cx = w/2, cy = h/2;
         const radius = w * 0.42;
-        const count = items.length;
-
-        ctx.clearRect(0, 0, w, h);
-        if (count === 0) {
+        if (!segmentAngles.length) {
+            ctx.clearRect(0, 0, w, h);
             ctx.fillStyle = "#aaa";
             ctx.font = "14px sans-serif";
             ctx.fillText("暂无选项，请添加", cx-60, cy);
             return;
         }
 
-        const angleStep = (Math.PI * 2) / count;
-        for (let i = 0; i < count; i++) {
-            const start = i * angleStep + rotation;
-            const end = (i + 1) * angleStep + rotation;
+        ctx.clearRect(0, 0, w, h);
+        for (let i = 0; i < segmentAngles.length; i++) {
+            const start = segmentAngles[i].start + rotation;
+            const end = segmentAngles[i].end + rotation;
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.arc(cx, cy, radius, start, end);
@@ -412,7 +304,7 @@
             ctx.fill();
             ctx.save();
             ctx.translate(cx, cy);
-            ctx.rotate(start + angleStep/2);
+            ctx.rotate(start + (segmentAngles[i].end - segmentAngles[i].start) / 2);
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             let text = items[i].name;
@@ -435,12 +327,11 @@
 
     function getCurrentIndex() {
         if (items.length === 0) return -1;
-        const pointerAngle = -Math.PI/2;
-        const angleStep = (Math.PI*2)/items.length;
-        for (let i=0; i<items.length; i++) {
-            let start = i*angleStep + rotation;
-            let end = (i+1)*angleStep + rotation;
-            let normPtr = ((pointerAngle % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+        const pointerAngle = -Math.PI / 2;
+        let normPtr = ((pointerAngle % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+        for (let i = 0; i < segmentAngles.length; i++) {
+            let start = segmentAngles[i].start + rotation;
+            let end = segmentAngles[i].end + rotation;
             let normStart = ((start % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
             let normEnd = ((end % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
             if (normStart < normEnd) {
@@ -449,48 +340,58 @@
                 if (normPtr >= normStart || normPtr < normEnd) return i;
             }
         }
-        return 0;
+        // 边界容错：取最近中心
+        let minDist = Infinity;
+        let nearest = 0;
+        for (let i = 0; i < segmentAngles.length; i++) {
+            let center = segmentAngles[i].start + (segmentAngles[i].end - segmentAngles[i].start)/2;
+            let angle = center + rotation;
+            let diff = Math.abs(angle - pointerAngle);
+            diff = Math.min(diff, 2*Math.PI - diff);
+            if (diff < minDist) {
+                minDist = diff;
+                nearest = i;
+            }
+        }
+        return nearest;
     }
 
     function updateResultText() {
         const idx = getCurrentIndex();
-        if (idx >=0 && items[idx]) resultDisplay.innerHTML = `🎉 结果：${items[idx].name} 🎉`;
-        else resultDisplay.innerHTML = "✨ 点击转盘开始 ✨";
+        if (idx >= 0 && items[idx]) {
+            resultDisplay.innerHTML = `🎉 当前指向：${items[idx].name} 🎉`;
+        } else {
+            resultDisplay.innerHTML = "✨ 点击转盘开始 ✨";
+        }
     }
 
-    function selectIndexByWeight() {
-        if (items.length === 0) return -1;
-        let total = items.reduce((s, item) => s + (item.weight || 1), 0);
-        let rand = Math.random() * total;
-        let acc = 0;
-        for (let i=0; i<items.length; i++) {
-            acc += (items[i].weight || 1);
-            if (rand <= acc) return i;
-        }
-        return 0;
+    // 修改这里：增加圈数范围，让减速感更明显
+    function getRandomTotalRotation() {
+        // 圈数范围提高到 12~25 圈
+        const extraRounds = 12 + Math.floor(Math.random() * 14);
+        const randomRad = Math.random() * 2 * Math.PI;
+        return extraRounds * 2 * Math.PI + randomRad;
     }
 
     function spinWheel() {
         if (spinning || items.length === 0) return;
         spinning = true;
-        const targetIdx = selectIndexByWeight();
-        const angleStep = (Math.PI*2)/items.length;
-        const targetCenter = targetIdx * angleStep + angleStep/2;
-        let delta = (-Math.PI/2) - (targetCenter + rotation);
-        delta = ((delta % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
-        const extraRounds = 5 + Math.floor(Math.random()*8);
-        const totalDelta = delta + extraRounds * 2 * Math.PI;
+        const totalDelta = getRandomTotalRotation();
         const startRot = rotation;
         const targetRot = startRot + totalDelta;
         const startTime = performance.now();
-        const duration = 1500;
+        const duration = 2800; // 延长动画时间到 2.8 秒，减速过程更长
+
         function animate(now) {
-            let t = Math.min(1, (now-startTime)/duration);
-            let ease = 1 - Math.pow(1-t, 3);
+            let t = Math.min(1, (now - startTime) / duration);
+            // 使用 easeOutQuart 曲线，减速更明显（最后阶段慢速）
+            let ease = 1 - Math.pow(1 - t, 4);
             rotation = startRot + totalDelta * ease;
             drawWheel();
-            if (t < 1) requestAnimationFrame(animate);
-            else {
+            updateResultText();
+            if (t < 1) {
+                requestAnimationFrame(animate);
+            } else {
                 rotation = targetRot;
                 drawWheel();
                 updateResultText();
@@ -498,6 +399,12 @@
             }
         }
         requestAnimationFrame(animate);
+    }
+
+    function refreshWheel() {
+        segmentAngles = calcSegmentAngles();
+        drawWheel();
+        updateResultText();
     }
 
     function renderOptionList() {
@@ -508,6 +415,7 @@
             empty.style.color = "#8e9fc3";
             empty.style.padding = "0.5rem";
             optionListContainer.appendChild(empty);
+            refreshWheel();
             return;
         }
         items.forEach((item, idx) => {
@@ -518,22 +426,20 @@
             nameInput.value = item.name;
             nameInput.addEventListener('change', (e) => {
                 items[idx].name = e.target.value.trim() || "未命名";
-                drawWheel();
-                updateResultText();
                 renderOptionList();
+                refreshWheel();
             });
             const weightInput = document.createElement('input');
             weightInput.type = 'number';
             weightInput.value = item.weight;
             weightInput.step = 1;
             weightInput.min = 1;
-            weightInput.style.width = '70px';
             weightInput.addEventListener('change', (e) => {
                 let w = parseInt(e.target.value);
                 if (isNaN(w) || w < 1) w = 1;
                 items[idx].weight = w;
                 renderOptionList();
-                drawWheel();
+                refreshWheel();
             });
             const delBtn = document.createElement('button');
             delBtn.textContent = '✖';
@@ -543,15 +449,15 @@
                     return;
                 }
                 items.splice(idx, 1);
-                drawWheel();
-                updateResultText();
                 renderOptionList();
+                refreshWheel();
             });
             div.appendChild(nameInput);
             div.appendChild(weightInput);
             div.appendChild(delBtn);
             optionListContainer.appendChild(div);
         });
+        refreshWheel();
     }
 
     function addOption() {
@@ -561,23 +467,17 @@
         items.push({ name: name, weight: Math.max(1, weight) });
         document.getElementById('newOptionText').value = '';
         document.getElementById('newOptionWeight').value = '1';
-        drawWheel();
-        updateResultText();
         renderOptionList();
     }
 
     function resetDefault() {
         items = DEFAULT_ITEMS.map(item => ({ ...item }));
-        drawWheel();
-        updateResultText();
         renderOptionList();
     }
 
     function clearAll() {
         if (confirm("确定清空所有选项吗？至少需要保留一个。")) {
             items = [{ name: "默认选项", weight: 1 }];
-            drawWheel();
-            updateResultText();
             renderOptionList();
         }
     }
