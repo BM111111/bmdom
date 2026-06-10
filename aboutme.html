@@ -178,6 +178,62 @@
                 transform: translateY(0) translateX(-50%);
             }
         }
+        /* 音乐播放器按钮 */
+    .music-player {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 1000;
+        background: #2a6fdb;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: 0.2s;
+        border: none;
+        font-size: 24px;
+        color: white;
+    }
+.music-player:hover {
+    transform: scale(1.05);
+    background: #1e5bbf;
+}
+.music-player.playing {
+    animation: spin 4s linear infinite;
+}
+.music-player.paused {
+    animation: none;
+}
+.music-player .no-icon {
+    display: none;
+}
+.music-player.paused .play-icon {
+    display: none;
+}
+.music-player.paused .no-icon {
+    display: inline;
+    position: relative;
+}
+.music-player .no-icon::after {
+    content: "\\";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    font-size: 32px;
+    font-weight: bold;
+    color: #ff4444;
+    text-shadow: 0 0 2px white;
+    line-height: 1;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
     </style>
 </head>
 <body>
@@ -214,6 +270,10 @@
 
         <!-- 已删除返回按钮 -->
     </div>
+    <button id="musicToggleBtn" class="music-player playing">
+    <span class="play-icon">🎵</span>
+    <span class="no-icon">🎵</span>
+    </button>
     <footer>都是凛拓川干的！ ©2010-现在 禁止采集数据和转载商业化</footer>
 </div>
 
@@ -271,6 +331,62 @@
             copyToClipboard('3075404772@qq.com', '📧 邮箱已复制');
         });
     }
+    // ========== 背景音乐控制 ==========
+const musicBtn = document.getElementById('musicToggleBtn');
+let audio = null;
+let isPlaying = false;
+
+function initAudio() {
+    if (audio) return;
+    audio = new Audio('sounds/aboutmemusic.mp3');
+    audio.loop = true;
+    audio.volume = 0.3;
+}
+
+function playMusic() {
+    if (!audio) initAudio();
+    audio.play().then(() => {
+        isPlaying = true;
+        musicBtn.classList.remove('paused');
+        musicBtn.classList.add('playing');
+    }).catch(e => {
+        console.log('自动播放被阻止，需要用户点击');
+        isPlaying = false;
+        musicBtn.classList.add('paused');
+        musicBtn.classList.remove('playing');
+    });
+}
+
+function pauseMusic() {
+    if (audio) {
+        audio.pause();
+        isPlaying = false;
+        musicBtn.classList.remove('playing');
+        musicBtn.classList.add('paused');
+    }
+}
+
+window.addEventListener('load', () => {
+    initAudio();
+    playMusic();
+});
+
+musicBtn.addEventListener('click', () => {
+    initAudio();
+    if (isPlaying) {
+        pauseMusic();
+    } else {
+        playMusic();
+    }
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && audio && isPlaying) {
+        audio.pause();
+    } else if (!document.hidden && audio && isPlaying) {
+        audio.play().catch(e => console.log);
+    }
+});
 </script>
 </body>
 </html>
